@@ -119,6 +119,25 @@ private:
 	shape_predictor predictor;
 	anet_type face_recognizer;
 
+	/*
+	void loadEmbeddingVector(
+	    const string& filename,
+	    vector<matrix>& embedding_vectors)
+	Description
+	    filename에 저장된 임베딩 벡터들을 embedding_vectors에 로드한다.
+	Argument
+	    1. const string& filename: 파일 경로
+	    2. vector<matrix<float, 0, 1>>& embedding_vectors:
+	        운전자 안면 임베딩 벡터
+	    3. int& err: 에러 코드 (추후 구현)
+	Return
+	*/
+	void loadEmbeddingVector(
+	    const string& filename,
+	    vector<matrix<float, 0, 1>>& embedding_vectors,
+	    int& err) {
+	}
+
 public:
 	DriverAuthenticator() : detector(get_frontal_face_detector()),
 	                        predictor(deserialize(SHAPE_PREDICTOR_PATH).operator>>),
