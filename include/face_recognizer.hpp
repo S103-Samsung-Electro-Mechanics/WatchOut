@@ -2,8 +2,8 @@
 
 // #include Dlib
 // #include OpenCV
-#include <vector>
 #include <string>
+#include <vector>
 
 /*
 이미지에서 가장 큰 얼굴을 잘라내 반환하는 클래스
@@ -68,43 +68,94 @@ private:
 
 	/*
 	void saveEmbeddingVector(
-		const string& filename,
-		const vector<matrix>& embedding_vectors)
+	    const string& filename,
+	    const vector<matrix>& embedding_vectors)
 	Description
-		embedding_vectors를 filename에 바이너리로 저장한다.
+	    embedding_vectors를 filename에 바이너리로 저장한다.
 	Argument
-		1. const string& filename: 파일 경로
-		2. const vector<matrix<float, 0, 1>>& embedding_vectors:
-			운전자 안면 임베딩 벡터
-		3. int& err: 에러 코드 (추후 구현)
+	    1. const string& filename: 파일 경로
+	    2. const vector<matrix<float, 0, 1>>& embedding_vectors:
+	        운전자 안면 임베딩 벡터
+	    3. int& err: 에러 코드 (추후 구현)
 	Return
 	*/
 	void saveEmbeddingVector(
-		const string& filename,
-		const vector<matrix<float, 0, 1>>& embedding_vectors,
-		int& err) {
-		
+	    const string& filename,
+	    const vector<matrix<float, 0, 1>>& embedding_vectors,
+	    int& err) {
 	}
 
 public:
-	DriverRegistrar() :
-		detector(get_frontal_face_detector()),
-		predictor(deserialize(SHAPE_PREDICTOR_PATH).operator>>),
-		face_recognizer(deserialize(FACE_RECOGNIZER_PATH).operator>>) {}
-	
+	DriverRegistrar() : detector(get_frontal_face_detector()),
+	                    predictor(deserialize(SHAPE_PREDICTOR_PATH).operator>>),
+	                    face_recognizer(deserialize(FACE_RECOGNIZER_PATH).operator>>) {}
+
 	/*
-	bool registerDriver(std::vector<cv::Mat>&, int&)
+	bool registerDriver(
+		vector<Mat>& main_cam_images,
+		const string& driver_name,
+		int& err)
+
 	Description
-		운전자 안면 이미지들을 받아 임베딩 벡터들을 저장한다.
-		만약 전달 받은 이미지들에서 얼굴을 하나도 검출할 수 없다면 false를 반환한다.
+	    운전자 안면 이미지들을 받아 임베딩 벡터들을 저장한다.
+	    만약 전달 받은 이미지들에서 얼굴을 하나도 검출할 수 없다면 false를 반환한다.
 	Argument:
-		1. vector<Mat>& 운전자 감시 카메라에서 받은 이미지들.
-		2. string& 운전자 이름
-		3. int& 에러 코드 (추후 구현)
+	    1. vector<Mat>& main_cam_images: 운전자 감시 카메라에서 받은 이미지들.
+	    2. const string& driver_name: 운전자 이름
+	    3. int& err: 에러 코드 (추후 구현)
 	Return:
-		등록 성공 여부
+	    등록 성공 여부
 	*/
-	bool registerDriver(vector<Mat>& main_cam_image, const string& driver_name, int& err) {
+	bool registerDriver(vector<Mat>& main_cam_images, const string& driver_name, int& err) {
+	}
+};
+
+class DriverAuthenticator {
+private:
+	const std::string SHAPE_PREDICTOR_PATH = "shape_predictor_5_face_landmarks.dat";
+	const std::string FACE_RECOGNIZER_PATH = "dlib_face_recognition_resnet_model_v1.dat";
+
+	frontal_face_detector detector;
+	shape_predictor predictor;
+	anet_type face_recognizer;
+
+public:
+	DriverAuthenticator() : detector(get_frontal_face_detector()),
+	                        predictor(deserialize(SHAPE_PREDICTOR_PATH).operator>>),
+	                        face_recognizer(deserialize(FACE_RECOGNIZER_PATH).operator>>) {}
+
+	/*
+	bool authenticateDriver(
+		Mat& main_cam_image,
+		string& driver_name,
+		int& err)
+		
+	Description
+	    * 현재 운전석에 앉아 있는 운전자의 이미지를 받는다.
+		* 디스크에 저장된 등록된 운전자들의 안면 임베딩 벡터들과 비교해 등록된 운전자인지를 파악한다.
+			벡터거리배열
+			for 운전자 in 모든등록운전자:
+				for 안면벡터 in 안면벡터들:
+					벡터거리평균 += 거리(안면벡터, 현재 이미지 안면벡터)
+				
+				벡터거리평균 /= 해당 운전자의 저장된 안면벡터 개수
+
+				벡터거리배열.append(벡터거리평균)
+			
+			최소거리인덱스 = 최소인덱스(벡터거리배열)
+
+			if 벡터거리배열[최소거리인덱스] < 문턱값:
+				return true;
+			else:
+				return false;
+	Argument:
+	    1. Mat& main_cam_image: 운전자 감시 카메라에서 받은 이미지
+	    2. string& driver_name 인식된 운전자 이름
+	    3. int& err: 에러 코드 (추후 구현)
+	Return:
+	    인증 성공 여부
+	*/
+	bool authenticateDriver(Mat& main_cam_image, string& driver_name, int& err) {
 
 	}
 };
