@@ -7,14 +7,14 @@ namespace dms {
 	/*
 	               ### <--(카메라)
 	                |
-	           _____|________________
-	          /  ---|--> X          / <--(안면 이미지)
-	         /  /   |              /
-	        /  /    V             /
-	       /  /     Z            / <--(Z값이 작을수록 카메라와 근접)
-	      /  y                  /
-	     /                     /
-	    /_____________________/
+	           _____|_________________
+	          /  ---|--> X [0.0, 1.0]/ <--(안면 이미지)
+	         /  /   |               /
+	        /  /    V              /
+	       /  /     Z             / <--(Z값이 작을수록 카메라와 근접)
+	      /  y [0.0, 1.0]        /     (X, Y와 스케일이 비슷)
+	     /                      /
+	    /______________________/
 
 	*/
 	//  **불확실**
@@ -29,6 +29,12 @@ namespace dms {
     Point2D operator-(const Point2D& minuend, const Point2D& subtrahend) {
         return { minuend.x - subtrahend.x, minuend.y - subtrahend.y };
     }
+	Point2D operator*(const Point2D& multiplicand, float multiplier) {
+		return { multiplicand.x * multiplier, multiplicand.y * multiplier };
+	}
+	Point2D operator/(const Point2D& dividend, float divisor) {
+		return { dividend.x / divisor, dividend.y / divisor };
+	}
 
 	struct Point3D {
 		float x;
@@ -41,6 +47,12 @@ namespace dms {
     Point3D operator-(const Point3D& minuend, const Point3D& subtrahend) {
         return { minuend.x - subtrahend.x, minuend.y - subtrahend.y, minuend.z - subtrahend.z };
     }
+	Point3D operator*(const Point3D& multiplicand, float multiplier) {
+		return { multiplicand.x * multiplier, multiplicand.y * multiplier, multiplicand.z * multiplier };
+	}
+	Point3D operator/(const Point3D& dividend, float divisor) {
+		return { dividend.x / divisor, dividend.y / divisor, dividend.z / divisor };
+	}
 
     struct Angle2D {
         float hor;
@@ -54,7 +66,7 @@ namespace dms {
     };
 
     struct GazeEstimatorCoefficients {
-        float coeffs[5];
+        Point2D coeffs[5];
     };
 
 	struct EyeAspectRatio {
@@ -69,6 +81,7 @@ namespace dms {
 
 		// midpoint between the eyes
 		Point3D me; // MP 168
+
 		// bottom of the nose
 		Point3D bn; // MP 2
 
@@ -76,13 +89,15 @@ namespace dms {
 		// and bottom corners of the limbus
 		// of irises
 		// 안쪽에서부터 바깥쪽으로 돌아가는 방향
-		// (운전자의 우안)                           (운전자의 좌안)
-		//       T[1]                                    T[1]
-		//       /\                                       /\ 
-		//      /  \ R[0] <-- (개발자의 우측) ----------> /  \ R[2]
-		// L[2] \  /  <------ (개발자의 좌측) -----> L[0] \  /
-		//       \/                                       \/
-		//      B[3]                                     B[3]
+		// (운전자의 우안)        (운전자의 좌안)
+		//      T[1]                  T[1]
+		//       /\                    /\ 
+		//      /  \ R[0] <---------- /  \ R[2] <--- (개발자의 우측)
+		// L[2] \  / <---------- L[0] \  / <-------- (개발자의 좌측)
+		//       \/                    \/
+		//      B[3]                  B[3]
+		//
+		//                        [0]  [1]  [2]  [3]
 		Point3D pupil_l[4]; // MP 476, 475, 474, 477    (운전자의 좌안)
 		Point3D pupil_r[4]; // MP 469, 470, 471, 472    (운전자의 우안)
 	};
