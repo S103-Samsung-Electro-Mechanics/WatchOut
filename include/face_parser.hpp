@@ -26,14 +26,14 @@ namespace dms {
 	private:
 		const GazeEstimatorCoefficients gec;
 
-		inline Angle2D calcHeadRotation(const EyeGazeLandmarks& egl) const {
+		inline Angle2F calcHeadRotation(const EyeGazeLandmarks& egl) const {
 			return {
 				std::atan((egl.mca_l.z - egl.mca_r.z) / (egl.mca_l.x - egl.mca_r.x)), // hor (around y axis)
 				std::atan((egl.me.z - egl.bn.z) / (egl.me.y - egl.bn.y)) // ver (around x axis)
 			};
 		}
 
-		inline Point2D calcRelativeLength(const EyeGazeLandmarks& egl) const {
+		inline Point2F calcRelativeLength(const EyeGazeLandmarks& egl) const {
 			return {
 				std::sqrt(
 					std::pow(egl.me.x - egl.bn.x, 2.0f) +
@@ -46,11 +46,11 @@ namespace dms {
 			};
 		}
 
-		inline Point2D calcPupilCenter(
+		inline Point2F calcPupilCenter(
 			const EyeGazeLandmarks& egl,
-			const Point2D& face_rel_len) const {
-			Point2D pupil_l { 0.0f, 0.0f };
-			Point2D pupil_r { 0.0f, 0.0f };
+			const Point2F& face_rel_len) const {
+			Point2F pupil_l { 0.0f, 0.0f };
+			Point2F pupil_r { 0.0f, 0.0f };
 
 			for (int i = 0; i < 4; ++i) {
 				pupil_l.x -= egl.pupil_l[i].x;
@@ -80,12 +80,12 @@ namespace dms {
 	public:
 		EyeParser(const GazeEstimatorCoefficients& gec) : gec(gec) {}
 		
-		Angle2D calcGazeDirection(const EyeGazeLandmarks& egl) {
-			Angle2D gd { 0.0f, 0.0f };
-			Angle2D rotation = calcHeadRotation(egl);
-			Point2D face_rel_len = calcRelativeLength(egl);
-			Point2D pupil = calcPupilCenter(egl, face_rel_len);
-			Point2D face_center { egl.me.x, egl.me.y };
+		Angle2F calcGazeDirection(const EyeGazeLandmarks& egl) {
+			Angle2F gd { 0.0f, 0.0f };
+			Angle2F rotation = calcHeadRotation(egl);
+			Point2F face_rel_len = calcRelativeLength(egl);
+			Point2F pupil = calcPupilCenter(egl, face_rel_len);
+			Point2F face_center { egl.me.x, egl.me.y };
 
 			gd.hor = gec.coeffs[0].x;
 			gd.ver = gec.coeffs[0].y;

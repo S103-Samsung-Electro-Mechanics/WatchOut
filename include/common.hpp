@@ -19,54 +19,54 @@ namespace dms {
 	*/
 	//  **불확실**
 
-	struct Point2D {
+	struct Point2F {
 		float x;
 		float y;
 	};
-	Point2D operator+(const Point2D& augend, const Point2D& addend) {
+	Point2F operator+(const Point2F& augend, const Point2F& addend) {
 		return {augend.x + addend.x, augend.y + addend.y};
 	}
-	Point2D operator-(const Point2D& minuend, const Point2D& subtrahend) {
+	Point2F operator-(const Point2F& minuend, const Point2F& subtrahend) {
 		return {minuend.x - subtrahend.x, minuend.y - subtrahend.y};
 	}
-	Point2D operator*(const Point2D& multiplicand, float multiplier) {
+	Point2F operator*(const Point2F& multiplicand, float multiplier) {
 		return {multiplicand.x * multiplier, multiplicand.y * multiplier};
 	}
-	Point2D operator/(const Point2D& dividend, float divisor) {
+	Point2F operator/(const Point2F& dividend, float divisor) {
 		return {dividend.x / divisor, dividend.y / divisor};
 	}
 
-	struct Point3D {
+	struct Point3F {
 		float x;
 		float y;
 		float z;
 	};
-	Point3D operator+(const Point3D& augend, const Point3D& addend) {
+	Point3F operator+(const Point3F& augend, const Point3F& addend) {
 		return {augend.x + addend.x, augend.y + addend.y, augend.z + addend.z};
 	}
-	Point3D operator-(const Point3D& minuend, const Point3D& subtrahend) {
+	Point3F operator-(const Point3F& minuend, const Point3F& subtrahend) {
 		return {minuend.x - subtrahend.x, minuend.y - subtrahend.y, minuend.z - subtrahend.z};
 	}
-	Point3D operator*(const Point3D& multiplicand, float multiplier) {
+	Point3F operator*(const Point3F& multiplicand, float multiplier) {
 		return {multiplicand.x * multiplier, multiplicand.y * multiplier, multiplicand.z * multiplier};
 	}
-	Point3D operator/(const Point3D& dividend, float divisor) {
+	Point3F operator/(const Point3F& dividend, float divisor) {
 		return {dividend.x / divisor, dividend.y / divisor, dividend.z / divisor};
 	}
 
-	struct Angle2D {
+	struct Angle2F {
 		float hor;
 		float ver;
 	};
 
-	struct Angle3D {
+	struct Angle3F {
 		float roll;
 		float pitch;
 		float yaw;
 	};
 
 	struct GazeEstimatorCoefficients {
-		Point2D coeffs[5];
+		Point2F coeffs[5];
 	};
 
 	struct EyeAspectRatio {
@@ -76,14 +76,14 @@ namespace dms {
 
 	struct EyeGazeLandmarks {
 		// medial canthal angle (MCA)
-		Point3D mca_l; // MediaPipe landmark #362  (운전자의 좌측)
-		Point3D mca_r; // MP 133                   (운전자의 우측)
+		Point3F mca_l; // MediaPipe landmark #362  (운전자의 좌측)
+		Point3F mca_r; // MP 133                   (운전자의 우측)
 
 		// midpoint between the eyes
-		Point3D me; // MP 168
+		Point3F me; // MP 168
 
 		// bottom of the nose
-		Point3D bn; // MP 2
+		Point3F bn; // MP 2
 
 		// center of the right, top, left,
 		// and bottom corners of the limbus
@@ -98,8 +98,8 @@ namespace dms {
 		//      B[3]                  B[3]
 		//
 		//                        [0]  [1]  [2]  [3]
-		Point3D pupil_l[4]; // MP 476, 475, 474, 477    (운전자의 좌안)
-		Point3D pupil_r[4]; // MP 469, 470, 471, 472    (운전자의 우안)
+		Point3F pupil_l[4]; // MP 476, 475, 474, 477    (운전자의 좌안)
+		Point3F pupil_r[4]; // MP 469, 470, 471, 472    (운전자의 우안)
 	};
 
 	struct EyeClosednessLandmarks {
@@ -110,8 +110,8 @@ namespace dms {
 		// mid outer and inner points
 		// of the lower lid             [4], [5]
 		// 안쪽에서부터 바깥쪽으로 돌아가는 방향
-		Point3D lid_l[6]; // MP 362, 384, 387, 263, 373, 381 (운전자의 좌안)
-		Point3D lid_r[6]; // MP 133, 157, 160,  33, 144, 154 (운전자의 우안)
+		Point3F lid_l[6]; // MP 362, 384, 387, 263, 373, 381 (운전자의 좌안)
+		Point3F lid_r[6]; // MP 133, 157, 160,  33, 144, 154 (운전자의 우안)
 	};
 
 	struct DriverInfo {
