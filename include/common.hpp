@@ -115,17 +115,76 @@ namespace dms {
 	};
 
 	struct DriverInfo {
-		const std::string name;
-		// vector of dlib matrices
+		const std::string name; // 1~4
+		std::vector<dlib::matrix<float, 0, 1>> emb_vecs;
 		GazeEstimatorCoefficients gec_hor;
 		GazeEstimatorCoefficients gec_ver;
 	};
 
-	bool saveDriverInfo(const DriverInfo& di, int& err) {
+	bool saveDriverInfo(const std::string& filename, const DriverInfo& di, int& err) {
+		//di.emb_vecs[0] = 
+		ofstream ofs(filename, ios::binary);
+		if (!ofs) {
+			cerr << "Error: Unable to open file for writing." << endl;
+			return false;
+		}
+		
+		size_t num_embedding_vectors = di.emb_vecs.size();
+		ofs.write(reinterpret_cast<const char*>(&num_embedding_vectors), sizeof(num_embedding_vectors));
+
+		for (const auto& descriptor : di.emb_vecs) {
+			size_t num_rows = descriptor.nr();
+			size_t num_cols = descriptor.nc();
+
+			ofs.write(reinterpret_cast<const char*>(&num_rows), sizeof(num_rows));
+			ofs.write(reinterpret_cast<const char*>(&num_cols), sizeof(num_cols));
+			ofs.write(reinterpret_cast<const char*>(descriptor.begin()), num_rows * num_cols * sizeof(float));
+		}
+		// Save GazeEstimatorCoefficients
+		for (int i = 0; i < 5; ++i) {
+			ofs.write(reinterpret_cast<const char*>(&di.gec_hor.coeffs[i].x), sizeof(float));
+			ofs.write(reinterpret_cast<const char*>(&di.gec_hor.coeffs[i].y), sizeof(float));
+		}
+		for (int i = 0; i < 5; ++i) {
+			ofs.write(reinterpret_cast<const char*>(&di.gec_ver.coeffs[i].x), sizeof(float));
+			ofs.write(reinterpret_cast<const char*>(&di.gec_ver.coeffs[i].y), sizeof(float));
+		}
+		ofs.close();
 		return true;
 	}
 
-	bool loadDriverInfo(DriverInfo& di, int& err) {
+	bool loadDriverInfo(const std::string& filename, const DriverInfo& di, int& err) {
+		ifstream ifs(filename, ios::binary);
+		if (!ifs) {
+			cerr << "Error: Unable to open file for reading." << endl;
+			return false;
+		}
+
+		size_t num_embedding_vectors;
+		ifs.read(reinterpret_cast<char*>(&num_embedding_vectors), sizeof(num_embedding_vectors));
+
+		di.emb_vecs.resize(num_embedding_vectors);
+
+		for (auto& descriptor : di.emb_vecs) {
+			size_t num_rows, num_cols;
+			ifs.read(reinterpret_cast<char*>(&num_rows), sizeof(num_rows));
+			ifs.read(reinterpret_cast<char*>(&num_cols), sizeof(num_cols));
+
+			descriptor.set_size(num_rows, num_cols);
+			ifs.read(reinterpret_cast<char*>(descriptor.begin()), num_rows * num_cols * sizeof(float));
+		}
+
+		// Load GazeEstimatorCoefficients
+		for (int i = 0; i < 5; ++i) {
+			ifs.read(reinterpret_cast<char*>(&di.gec_hor.coeffs[i].x), sizeof(float));
+			ifs.read(reinterpret_cast<char*>(&di.gec_hor.coeffs[i].y), sizeof(float));
+		}
+		for (int i = 0; i < 5; ++i) {
+			ifs.read(reinterpret_cast<char*>(&di.gec_ver.coeffs[i].x), sizeof(float));
+			ifs.read(reinterpret_cast<char*>(&di.gec_ver.coeffs[i].y), sizeof(float));
+		}
+
+		ifs.close();
 		return true;
 	}
 
