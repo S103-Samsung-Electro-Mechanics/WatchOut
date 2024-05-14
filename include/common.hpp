@@ -117,8 +117,7 @@ namespace dms {
 	struct DriverInfo {
 		const std::string name; // 1~4
 		std::vector<dlib::matrix<float, 0, 1>> emb_vecs;
-		GazeEstimatorCoefficients gec_hor;
-		GazeEstimatorCoefficients gec_ver;
+		GazeEstimatorCoefficients gec;
 	};
 
 	bool saveDriverInfo(const std::string& filename, const DriverInfo& di, int& err) {
@@ -142,12 +141,8 @@ namespace dms {
 		}
 		// Save GazeEstimatorCoefficients
 		for (int i = 0; i < 5; ++i) {
-			ofs.write(reinterpret_cast<const char*>(&di.gec_hor.coeffs[i].x), sizeof(float));
-			ofs.write(reinterpret_cast<const char*>(&di.gec_hor.coeffs[i].y), sizeof(float));
-		}
-		for (int i = 0; i < 5; ++i) {
-			ofs.write(reinterpret_cast<const char*>(&di.gec_ver.coeffs[i].x), sizeof(float));
-			ofs.write(reinterpret_cast<const char*>(&di.gec_ver.coeffs[i].y), sizeof(float));
+			ofs.write(reinterpret_cast<const char*>(&di.gec.coeffs[i].x), sizeof(float));
+			ofs.write(reinterpret_cast<const char*>(&di.gec.coeffs[i].y), sizeof(float));
 		}
 		ofs.close();
 		return true;
@@ -176,12 +171,8 @@ namespace dms {
 
 		// Load GazeEstimatorCoefficients
 		for (int i = 0; i < 5; ++i) {
-			ifs.read(reinterpret_cast<char*>(&di.gec_hor.coeffs[i].x), sizeof(float));
-			ifs.read(reinterpret_cast<char*>(&di.gec_hor.coeffs[i].y), sizeof(float));
-		}
-		for (int i = 0; i < 5; ++i) {
-			ifs.read(reinterpret_cast<char*>(&di.gec_ver.coeffs[i].x), sizeof(float));
-			ifs.read(reinterpret_cast<char*>(&di.gec_ver.coeffs[i].y), sizeof(float));
+			ifs.read(reinterpret_cast<char*>(&di.gec.coeffs[i].x), sizeof(float));
+			ifs.read(reinterpret_cast<char*>(&di.gec.coeffs[i].y), sizeof(float));
 		}
 
 		ifs.close();
