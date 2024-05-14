@@ -117,8 +117,7 @@ namespace dms {
 	struct DriverInfo {
 		const std::string name;
 		// vector of dlib matrices
-		GazeEstimatorCoefficients gec_hor;
-		GazeEstimatorCoefficients gec_ver;
+		GazeEstimatorCoefficients gec;
 	};
 
 	bool saveDriverInfo(const DriverInfo& di, int& err) {
