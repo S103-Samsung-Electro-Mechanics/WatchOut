@@ -4,6 +4,14 @@
 // #include OpenCV
 #include <string>
 #include <vector>
+
+#include <dlib/clustering.h>
+#include <dlib/dnn.h>
+#include <dlib/image_processing.h>
+#include <dlib/image_processing/frontal_face_detector.h>
+#include <dlib/opencv.h>
+#include <opencv2/highgui/highgui.hpp>
+
 #include "common.hpp"
 
 /*
@@ -34,20 +42,23 @@ namespace dms {
 		Return
 		*/
 		void saveEmbeddingVector(
-		    const string& filename,
-		    const std::vector<dms::matrix<float, 0, 1>>& embedding_vectors,
+		    const std::string& filename,
+		    const std::vector<dlib::matrix<float, 0, 1>>& embedding_vectors,
 		    int& err) {
 		}
 
 	public:
 		DriverRegistrar() : detector(dlib::get_frontal_face_detector()),
-		                    predictor(dlib::deserialize(SHAPE_PREDICTOR_PATH).operator>>),
-		                    face_recognizer(dlib::deserialize(FACE_RECOGNIZER_PATH).operator>>) {}
+		                    predictor(),
+		                    face_recognizer() {
+			dlib::deserialize(SHAPE_PREDICTOR_PATH) >> predictor;
+			dlib::deserialize(FACE_RECOGNIZER_PATH) >> face_recognizer;
+		}
 
 		/*
 		bool registerDriver(
 		    vector<Mat>& main_cam_images,
-			cosnt vector<Angle2D>& driver_gaze_angle,
+		    cosnt vector<Angle2D>& driver_gaze_angle,
 		    const string& driver_name,
 		    int& err)
 
@@ -56,18 +67,19 @@ namespace dms {
 		    만약 전달 받은 이미지들에서 얼굴을 하나도 검출할 수 없다면 false를 반환한다.
 		Argument:
 		    1. vector<Mat>& main_cam_images: 운전자 감시 카메라에서 받은 이미지들.
-			2. const vector<Angle2D>& driver_gaze_angle: 운전자가 main_cam_image
-			   상에서의 시선 각도. main_cam_images와 size()가 같아야 함.
+		    2. const vector<Angle2D>& driver_gaze_angle: 운전자가 main_cam_image
+		       상에서의 시선 각도. main_cam_images와 size()가 같아야 함.
 		    3. const string& driver_name: 운전자 이름
 		    4. int& err: 에러 코드 (추후 구현)
 		Return:
 		    등록 성공 여부
 		*/
 		bool registerDriver(
-			std::vector<cv::Mat>& main_cam_images,
-			const std::vector<Angle2D>& driver_gaze_angle,
-			const std::string& driver_name,
-			int& err) {
+		    std::vector<cv::Mat>& main_cam_images,
+		    const std::vector<Angle2D>& driver_gaze_angle,
+		    const std::string& driver_name,
+		    int& err) {
+			return false;
 		}
 	};
 
@@ -95,14 +107,17 @@ namespace dms {
 		*/
 		void loadEmbeddingVector(
 		    const std::string& filename,
-		    std::vector<dms::matrix<float, 0, 1>>& embedding_vectors,
+		    std::vector<dlib::matrix<float, 0, 1>>& embedding_vectors,
 		    int& err) {
 		}
 
 	public:
 		DriverAuthenticator() : detector(dlib::get_frontal_face_detector()),
-		                        predictor(dlib::deserialize(SHAPE_PREDICTOR_PATH).operator>>),
-		                        face_recognizer(dlib::deserialize(FACE_RECOGNIZER_PATH).operator>>) {}
+		                        predictor(),
+		                        face_recognizer() {
+			dlib::deserialize(SHAPE_PREDICTOR_PATH) >> predictor;
+			dlib::deserialize(FACE_RECOGNIZER_PATH) >> face_recognizer;
+		}
 
 		/*
 		bool authenticateDriver(
@@ -136,6 +151,7 @@ namespace dms {
 		    인증 성공 여부
 		*/
 		bool authenticateDriver(cv::Mat& main_cam_image, std::string& driver_name, int& err) {
+			return false;
 		}
 	};
 }

@@ -15,10 +15,11 @@
 
 // #include Dlib
 // #include OpenCV
-#include "common.hpp"
 #include <string>
 #include <vector>
 #include <cmath>
+
+#include "common.hpp"
 
 namespace dms {
 	class EyeParser {
@@ -104,6 +105,8 @@ namespace dms {
 			return gd;
 		}
 
-		EyeAspectRatio calcEAR(const EyeClosednessLandmarks& ecl) {}
+		EyeAspectRatio calcEAR(const EyeClosednessLandmarks& ecl) {
+			return { 0.0f, 0.0f };
+		}
 	};
 }

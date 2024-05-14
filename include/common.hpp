@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-// #include dlib
+#include <dlib/dnn.h>
 
 namespace dms {
 	/*
@@ -23,17 +23,17 @@ namespace dms {
 		float x;
 		float y;
 	};
-    Point2D operator+(const Point2D& augend, const Point2D& addend) {
-        return { augend.x + addend.x, augend.y + addend.y };
-    }
-    Point2D operator-(const Point2D& minuend, const Point2D& subtrahend) {
-        return { minuend.x - subtrahend.x, minuend.y - subtrahend.y };
-    }
+	Point2D operator+(const Point2D& augend, const Point2D& addend) {
+		return {augend.x + addend.x, augend.y + addend.y};
+	}
+	Point2D operator-(const Point2D& minuend, const Point2D& subtrahend) {
+		return {minuend.x - subtrahend.x, minuend.y - subtrahend.y};
+	}
 	Point2D operator*(const Point2D& multiplicand, float multiplier) {
-		return { multiplicand.x * multiplier, multiplicand.y * multiplier };
+		return {multiplicand.x * multiplier, multiplicand.y * multiplier};
 	}
 	Point2D operator/(const Point2D& dividend, float divisor) {
-		return { dividend.x / divisor, dividend.y / divisor };
+		return {dividend.x / divisor, dividend.y / divisor};
 	}
 
 	struct Point3D {
@@ -41,33 +41,33 @@ namespace dms {
 		float y;
 		float z;
 	};
-    Point3D operator+(const Point3D& augend, const Point3D& addend) {
-        return { augend.x + addend.x, augend.y + addend.y, augend.z + addend.z };
-    }    
-    Point3D operator-(const Point3D& minuend, const Point3D& subtrahend) {
-        return { minuend.x - subtrahend.x, minuend.y - subtrahend.y, minuend.z - subtrahend.z };
-    }
+	Point3D operator+(const Point3D& augend, const Point3D& addend) {
+		return {augend.x + addend.x, augend.y + addend.y, augend.z + addend.z};
+	}
+	Point3D operator-(const Point3D& minuend, const Point3D& subtrahend) {
+		return {minuend.x - subtrahend.x, minuend.y - subtrahend.y, minuend.z - subtrahend.z};
+	}
 	Point3D operator*(const Point3D& multiplicand, float multiplier) {
-		return { multiplicand.x * multiplier, multiplicand.y * multiplier, multiplicand.z * multiplier };
+		return {multiplicand.x * multiplier, multiplicand.y * multiplier, multiplicand.z * multiplier};
 	}
 	Point3D operator/(const Point3D& dividend, float divisor) {
-		return { dividend.x / divisor, dividend.y / divisor, dividend.z / divisor };
+		return {dividend.x / divisor, dividend.y / divisor, dividend.z / divisor};
 	}
 
-    struct Angle2D {
-        float hor;
-        float ver;
-    };
+	struct Angle2D {
+		float hor;
+		float ver;
+	};
 
-    struct Angle3D {
-        float roll;
-        float pitch;
-        float yaw;
-    };
+	struct Angle3D {
+		float roll;
+		float pitch;
+		float yaw;
+	};
 
-    struct GazeEstimatorCoefficients {
-        Point2D coeffs[5];
-    };
+	struct GazeEstimatorCoefficients {
+		Point2D coeffs[5];
+	};
 
 	struct EyeAspectRatio {
 		float left;
@@ -114,42 +114,41 @@ namespace dms {
 		Point3D lid_r[6]; // MP 133, 157, 160,  33, 144, 154 (운전자의 우안)
 	};
 
-    struct DriverInfo {
-        const std::string name;
-        // vector of dlib matrices
-        GazeEstimatorCoefficients gec_hor;
-        GazeEstimatorCoefficients gec_ver;
-    };
+	struct DriverInfo {
+		const std::string name;
+		// vector of dlib matrices
+		GazeEstimatorCoefficients gec_hor;
+		GazeEstimatorCoefficients gec_ver;
+	};
 
-    bool saveDriverInfo(const DriverInfo& di, int& err) {
-        return true;
-    }
+	bool saveDriverInfo(const DriverInfo& di, int& err) {
+		return true;
+	}
 
-    bool loadDriverInfo(DriverInfo& di, int& err) {
-        return true;
-    }
+	bool loadDriverInfo(DriverInfo& di, int& err) {
+		return true;
+	}
 
-    // dlib::
 	// 얼굴 인식 모델을 설계하기 위한 CNN 네트워크 블록 정의
 	// Identity mapping 정의
 	template <template <int, template <typename> class, int, typename> class block, int N, template <typename> class BN, typename SUBNET>
-	using residual = add_prev1<block<N, BN, 1, tag1<SUBNET>>>;
+	using residual = dlib::add_prev1<block<N, BN, 1, dlib::tag1<SUBNET>>>;
 
 	// Identity mapping 정의 (input, output channel과 resolution이 다를 때)
 	template <template <int, template <typename> class, int, typename> class block, int N, template <typename> class BN, typename SUBNET>
-	using residual_down = add_prev2<avg_pool<2, 2, 2, 2, skip1<tag2<block<N, BN, 2, tag1<SUBNET>>>>>>;
+	using residual_down = dlib::add_prev2<dlib::avg_pool<2, 2, 2, 2, dlib::skip1<dlib::tag2<block<N, BN, 2, dlib::tag1<SUBNET>>>>>>;
 
 	// Conv layer 정의
 	template <int N, template <typename> class BN, int stride, typename SUBNET>
-	using block = BN<con<N, 3, 3, 1, 1, relu<BN<con<N, 3, 3, stride, stride, SUBNET>>>>>;
+	using block = BN<dlib::con<N, 3, 3, 1, 1, dlib::relu<BN<dlib::con<N, 3, 3, stride, stride, SUBNET>>>>>;
 
 	// Residual block 정의 (batch norm을 affine transform으로 대체)
 	template <int N, typename SUBNET>
-	using ares = relu<residual<block, N, affine, SUBNET>>;
+	using ares = dlib::relu<residual<block, N, dlib::affine, SUBNET>>;
 
 	// Residual block 정의 (batch norm을 affine transform으로 대체)
 	template <int N, typename SUBNET>
-	using ares_down = relu<residual_down<block, N, affine, SUBNET>>;
+	using ares_down = dlib::relu<residual_down<block, N, dlib::affine, SUBNET>>;
 
 	// ResNet의 stage 정의
 	template <typename SUBNET>
@@ -164,13 +163,13 @@ namespace dms {
 	using alevel4 = ares<32, ares<32, ares<32, SUBNET>>>;
 
 	// ResNet 정의
-	using anet_type = loss_metric<
-	    fc_no_bias<
-	        128, avg_pool_everything<
+	using anet_type = dlib::loss_metric<
+	    dlib::fc_no_bias<
+	        128, dlib::avg_pool_everything<
 	                 alevel0<alevel1<alevel2<alevel3<alevel4<
-	                     max_pool<
+	                     dlib::max_pool<
 	                         3, 3, 2, 2,
-	                         relu<affine<con<
+	                         dlib::relu<dlib::affine<dlib::con<
 	                             32, 7, 7, 2, 2,
-	                             input_rgb_image_sized<150>>>>>>>>>>>>>;
+	                             dlib::input_rgb_image_sized<150>>>>>>>>>>>>>;
 }
