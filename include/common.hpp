@@ -1,7 +1,10 @@
 #pragma once
 
-#include <dlib/dnn.h>
+#include <chrono>
+#include <mutex>
 #include <string>
+#include <dlib/dnn.h>
+#include <dlib/matrix.h>
 
 namespace dms {
 	using errcode = std::uint32_t;
@@ -14,7 +17,7 @@ namespace dms {
 		_Ty& operator()() { return this->val; }
 		_Ty& value() { return this->val; }
 	};
-	
+
 	/*
 	               ### <--(카메라)
 	                |
@@ -57,6 +60,35 @@ namespace dms {
 
 	using Point2f = Point2_<float>;
 	using Point3f = Point3_<float>;
+
+	class Rate {
+	private:
+		std::chrono::steady_clock::time_point prev;
+		std::chrono::steady_clock::time_point curr;
+		std::chrono::steady_clock::time_point next;
+		std::chrono::duration<std::uint32_t, std::nano> interval;
+		std::chrono::duration<std::uint32_t, std::nano> span;
+
+	public:
+		Rate(const double rate) : prev(std::chrono::steady_clock::now()),
+		                          curr(std::chrono::steady_clock::now()),
+		                          next(std::chrono::steady_clock::now()),
+		                          interval(static_cast<std::uint32_t>(1e9 / rate)),
+		                          span(0) {}
+
+		inline double get() {
+			this->curr = std::chrono::steady_clock::now();
+			this->span = std::chrono::duration_cast<std::chrono::nanoseconds>(this->curr - this->prev);
+			this->prev = this->curr;
+			
+			return 1e9 / this->span.count();
+		}
+
+		inline void sleep() {
+			std::this_thread::sleep_until(this->next);
+			this->next = std::chrono::steady_clock::now() + this->interval;
+		}
+	};
 
 	struct GazeEstimatorCoefficients {
 		Point2f coeffs[5];
