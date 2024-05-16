@@ -95,8 +95,7 @@ namespace dms {
 	};
 
 	struct EyeAspectRatio {
-		float left;
-		float right;
+		float ear;
 	};
 
 	struct EyeGazeLandmarks {

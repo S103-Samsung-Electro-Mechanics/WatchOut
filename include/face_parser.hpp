@@ -77,6 +77,13 @@ namespace dms {
 			return (pupil_l + pupil_r) / 2.0;
 		}
 
+		inline float calcLength(Point3f st, Point3f ed)
+		{
+		return std::sqrt(
+			std::pow(st.x - ed.x, 2.0f) +
+			std::pow(st.y - ed.y, 2.0f));
+		}
+
 	public:
 		EyeParser(const GazeEstimatorCoefficients& gec) : gec(gec) {}
 
@@ -106,7 +113,15 @@ namespace dms {
 		}
 
 		EyeAspectRatio calcEAR(const EyeClosednessLandmarks& ecl) {
-			return {0.0f, 0.0f};
+			float eyelength1_l = calcLength(ecl.lid_l[1], ecl.lid_l[5]);  //1 5
+			float eyelength2_l = calcLength(ecl.lid_l[2], ecl.lid_l[4]);  //2 4
+			float eyewidth_l = calcLength(ecl.lid_l[0], ecl.lid_l[3]);  //가로 0 3
+
+			float eyelength1_r = calcLength(ecl.lid_r[1], ecl.lid_r[5]);
+			float eyelength2_r = calcLength(ecl.lid_r[2], ecl.lid_r[4]);
+			float eyewidth_r = calcLength(ecl.lid_r[0], ecl.lid_r[3]);
+
+			return {(eyelength1_l+eyelength2_l+eyelength1_r+eyelength2_r) / (eyewidth_l + eyewidth_r)};
 		}
 	};
 }
