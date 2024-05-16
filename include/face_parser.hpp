@@ -15,9 +15,9 @@
 
 // #include Dlib
 // #include OpenCV
+#include <cmath>
 #include <string>
 #include <vector>
-#include <cmath>
 
 #include "common.hpp"
 
@@ -26,31 +26,31 @@ namespace dms {
 	private:
 		const GazeEstimatorCoefficients gec;
 
-		inline Angle2F calcHeadRotation(const EyeGazeLandmarks& egl) const {
+		inline Point2f calcHeadRotation(const EyeGazeLandmarks& egl) const {
 			return {
-				std::atan((egl.mca_l.z - egl.mca_r.z) / (egl.mca_l.x - egl.mca_r.x)), // hor (around y axis)
-				std::atan((egl.me.z - egl.bn.z) / (egl.me.y - egl.bn.y)) // ver (around x axis)
+			    std::atan((egl.me.z - egl.bn.z) / (egl.me.y - egl.bn.y)),            // ver (around x axis)
+			    std::atan((egl.mca_l.z - egl.mca_r.z) / (egl.mca_l.x - egl.mca_r.x)) // hor (around y axis)
 			};
 		}
 
-		inline Point2F calcRelativeLength(const EyeGazeLandmarks& egl) const {
+		inline Point2f calcRelativeLength(const EyeGazeLandmarks& egl) const {
 			return {
-				std::sqrt(
-					std::pow(egl.me.x - egl.bn.x, 2.0f) +
-					std::pow(egl.me.y - egl.bn.y, 2.0f) +
-					std::pow(egl.me.z - egl.bn.z, 2.0f)), // relatvie width of the face to the image frame
-				std::sqrt(
-					std::pow(egl.mca_l.x - egl.mca_r.x, 2.0f) +
-					std::pow(egl.mca_l.y - egl.mca_r.y, 2.0f) +
-					std::pow(egl.mca_l.z - egl.mca_r.z, 2.0f)) // rel height of the face
+			    std::sqrt(
+			        std::pow(egl.me.x - egl.bn.x, 2.0f) +
+			        std::pow(egl.me.y - egl.bn.y, 2.0f) +
+			        std::pow(egl.me.z - egl.bn.z, 2.0f)), // relatvie width of the face to the image frame
+			    std::sqrt(
+			        std::pow(egl.mca_l.x - egl.mca_r.x, 2.0f) +
+			        std::pow(egl.mca_l.y - egl.mca_r.y, 2.0f) +
+			        std::pow(egl.mca_l.z - egl.mca_r.z, 2.0f)) // rel height of the face
 			};
 		}
 
-		inline Point2F calcPupilCenter(
-			const EyeGazeLandmarks& egl,
-			const Point2F& face_rel_len) const {
-			Point2F pupil_l { 0.0f, 0.0f };
-			Point2F pupil_r { 0.0f, 0.0f };
+		inline Point2f calcPupilCenter(
+		    const EyeGazeLandmarks& egl,
+		    const Point2f& face_rel_len) const {
+			Point2f pupil_l{0.0f, 0.0f};
+			Point2f pupil_r{0.0f, 0.0f};
 
 			for (int i = 0; i < 4; ++i) {
 				pupil_l.x -= egl.pupil_l[i].x;
@@ -63,7 +63,7 @@ namespace dms {
 			pupil_l.y /= 4.0f;
 			pupil_r.x /= 4.0f;
 			pupil_r.y /= 4.0f;
-			
+
 			pupil_l.x += egl.mca_l.x;
 			pupil_l.y += egl.mca_l.y;
 			pupil_r.x += egl.mca_r.x;
@@ -79,34 +79,34 @@ namespace dms {
 
 	public:
 		EyeParser(const GazeEstimatorCoefficients& gec) : gec(gec) {}
-		
-		Angle2F calcGazeDirection(const EyeGazeLandmarks& egl) {
-			Angle2F gd { 0.0f, 0.0f };
-			Angle2F rotation = calcHeadRotation(egl);
-			Point2F face_rel_len = calcRelativeLength(egl);
-			Point2F pupil = calcPupilCenter(egl, face_rel_len);
-			Point2F face_center { egl.me.x, egl.me.y };
 
-			gd.hor = gec.coeffs[0].x;
-			gd.ver = gec.coeffs[0].y;
+		Point2f calcGazeDirection(const EyeGazeLandmarks& egl) {
+			Point2f gaze_dir{0.0f, 0.0f};
+			Point2f rotation = calcHeadRotation(egl);
+			Point2f face_rel_len = calcRelativeLength(egl);
+			Point2f pupil = calcPupilCenter(egl, face_rel_len);
+			Point2f face_center{egl.me.x, egl.me.y};
 
-			gd.hor += gec.coeffs[1].x * rotation.hor;
-			gd.ver += gec.coeffs[1].y * rotation.ver;
+			gaze_dir.x = gec.coeffs[0].x;
+			gaze_dir.y = gec.coeffs[0].y;
 
-			gd.hor += gec.coeffs[2].x * pupil.x;
-			gd.ver += gec.coeffs[2].y * pupil.y;
+			gaze_dir.x += gec.coeffs[1].x * rotation.hor;
+			gaze_dir.y += gec.coeffs[1].y * rotation.ver;
 
-			gd.hor += gec.coeffs[3].x * face_rel_len.x;
-			gd.ver += gec.coeffs[3].y * face_rel_len.y;
+			gaze_dir.x += gec.coeffs[2].x * pupil.x;
+			gaze_dir.y += gec.coeffs[2].y * pupil.y;
 
-			gd.hor += gec.coeffs[4].x * face_center.x;
-			gd.ver += gec.coeffs[4].y * face_center.y;
+			gaze_dir.x += gec.coeffs[3].x * face_rel_len.x;
+			gaze_dir.y += gec.coeffs[3].y * face_rel_len.y;
 
-			return gd;
+			gaze_dir.x += gec.coeffs[4].x * face_center.x;
+			gaze_dir.y += gec.coeffs[4].y * face_center.y;
+
+			return gaze_dir;
 		}
 
 		EyeAspectRatio calcEAR(const EyeClosednessLandmarks& ecl) {
-			return { 0.0f, 0.0f };
+			return {0.0f, 0.0f};
 		}
 	};
 }
