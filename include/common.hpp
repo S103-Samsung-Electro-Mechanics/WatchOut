@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <dlib/dnn.h>
+#include <string>
 
 namespace dms {
 	/*
@@ -19,54 +19,36 @@ namespace dms {
 	*/
 	//  **불확실**
 
-	struct Point2F {
-		float x;
-		float y;
+	template <typename _Ty>
+	struct Point2_ {
+		_Ty x;
+		_Ty y;
 	};
-	Point2F operator+(const Point2F& augend, const Point2F& addend) {
-		return {augend.x + addend.x, augend.y + addend.y};
+	Point2_ operator+(const Point2_& left, const Point2_& right) {
+		return {left.x + right.x, left.y + right.x};
 	}
-	Point2F operator-(const Point2F& minuend, const Point2F& subtrahend) {
-		return {minuend.x - subtrahend.x, minuend.y - subtrahend.y};
-	}
-	Point2F operator*(const Point2F& multiplicand, float multiplier) {
-		return {multiplicand.x * multiplier, multiplicand.y * multiplier};
-	}
-	Point2F operator/(const Point2F& dividend, float divisor) {
-		return {dividend.x / divisor, dividend.y / divisor};
+	Point2_ operator-(const Point2_& left, const Point2_& right) {
+		return {left.x - right.x, left.y - right.y};
 	}
 
-	struct Point3F {
-		float x;
-		float y;
-		float z;
+	template <typename _Ty>
+	struct Point3_ {
+		_Ty x;
+		_Ty y;
+		_Ty z;
 	};
-	Point3F operator+(const Point3F& augend, const Point3F& addend) {
-		return {augend.x + addend.x, augend.y + addend.y, augend.z + addend.z};
+	Point2_ operator+(const Point2_& left, const Point2_& right) {
+		return {left.x + right.x, left.y + right.x, left.z + right.z};
 	}
-	Point3F operator-(const Point3F& minuend, const Point3F& subtrahend) {
-		return {minuend.x - subtrahend.x, minuend.y - subtrahend.y, minuend.z - subtrahend.z};
-	}
-	Point3F operator*(const Point3F& multiplicand, float multiplier) {
-		return {multiplicand.x * multiplier, multiplicand.y * multiplier, multiplicand.z * multiplier};
-	}
-	Point3F operator/(const Point3F& dividend, float divisor) {
-		return {dividend.x / divisor, dividend.y / divisor, dividend.z / divisor};
+	Point2_ operator-(const Point2_& left, const Point2_& right) {
+		return {left.x - right.x, left.y - right.y, left.z - right.z};
 	}
 
-	struct Angle2F {
-		float hor;
-		float ver;
-	};
-
-	struct Angle3F {
-		float roll;
-		float pitch;
-		float yaw;
-	};
+	using Point2f = Point2_<float>;
+	using Point3f = Point3_<float>;
 
 	struct GazeEstimatorCoefficients {
-		Point2F coeffs[5];
+		Point2f coeffs[5];
 	};
 
 	struct EyeAspectRatio {
@@ -76,14 +58,14 @@ namespace dms {
 
 	struct EyeGazeLandmarks {
 		// medial canthal angle (MCA)
-		Point3F mca_l; // MediaPipe landmark #362  (운전자의 좌측)
-		Point3F mca_r; // MP 133                   (운전자의 우측)
+		Point3f mca_l; // MediaPipe landmark #362  (운전자의 좌측)
+		Point3f mca_r; // MP 133                   (운전자의 우측)
 
 		// midpoint between the eyes
-		Point3F me; // MP 168
+		Point3f me; // MP 168
 
 		// bottom of the nose
-		Point3F bn; // MP 2
+		Point3f bn; // MP 2
 
 		// center of the right, top, left,
 		// and bottom corners of the limbus
@@ -98,8 +80,8 @@ namespace dms {
 		//      B[3]                  B[3]
 		//
 		//                        [0]  [1]  [2]  [3]
-		Point3F pupil_l[4]; // MP 476, 475, 474, 477    (운전자의 좌안)
-		Point3F pupil_r[4]; // MP 469, 470, 471, 472    (운전자의 우안)
+		Point3f pupil_l[4]; // MP 476, 475, 474, 477    (운전자의 좌안)
+		Point3f pupil_r[4]; // MP 469, 470, 471, 472    (운전자의 우안)
 	};
 
 	struct EyeClosednessLandmarks {
@@ -110,8 +92,8 @@ namespace dms {
 		// mid outer and inner points
 		// of the lower lid             [4], [5]
 		// 안쪽에서부터 바깥쪽으로 돌아가는 방향
-		Point3F lid_l[6]; // MP 362, 384, 387, 263, 373, 381 (운전자의 좌안)
-		Point3F lid_r[6]; // MP 133, 157, 160,  33, 144, 154 (운전자의 우안)
+		Point3f lid_l[6]; // MP 362, 384, 387, 263, 373, 381 (운전자의 좌안)
+		Point3f lid_r[6]; // MP 133, 157, 160,  33, 144, 154 (운전자의 우안)
 	};
 
 	struct DriverInfo {
@@ -121,13 +103,13 @@ namespace dms {
 	};
 
 	bool saveDriverInfo(const std::string& filename, const DriverInfo& di, int& err) {
-		//di.emb_vecs[0] = 
+		// di.emb_vecs[0] =
 		ofstream ofs(filename, ios::binary);
 		if (!ofs) {
 			cerr << "Error: Unable to open file for writing." << endl;
 			return false;
 		}
-		
+
 		size_t num_embedding_vectors = di.emb_vecs.size();
 		ofs.write(reinterpret_cast<const char*>(&num_embedding_vectors), sizeof(num_embedding_vectors));
 

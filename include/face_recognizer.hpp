@@ -57,7 +57,7 @@ namespace dms {
 		*/
 		bool registerDriver(
 		    std::vector<cv::Mat>& main_cam_images,
-		    const std::vector<Angle2F>& driver_gaze_angle,
+		    const std::vector<Point2f>& driver_gaze_angle,
 		    const std::string& driver_name,
 		    int& err) {
 				DriverInfo driver_info;
