@@ -4,6 +4,17 @@
 #include <string>
 
 namespace dms {
+	using errcode = std::uint32_t;
+	using embedding_vector = dlib::matrix<float, 0, 1>;
+
+	template <typename _Ty>
+	struct Pack {
+		std::mutex m;
+		_Ty val;
+		_Ty& operator()() { return this->val; }
+		_Ty& value() { return this->val; }
+	};
+	
 	/*
 	               ### <--(카메라)
 	                |
