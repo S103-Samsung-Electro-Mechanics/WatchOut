@@ -123,8 +123,13 @@ WatchOut은 운전자감시체계 기능을 제공하는 라이브러리 DMS를 
 * 참고문헌
 
 ### 시선 각도 추정
-* 알고리즘 간단 설명
+* MediaPipe로 얻은 landmark 6개 (양쪽 눈 끝, 코끝, 턱, 양쪽 입꼬리)의 x, y좌표(*image_points*)와 각 해당하는 위치의 3D 좌표를 갖는 general한 얼굴 모델(*model_points*), 안구 중앙의 3D 좌표(*Eye_ball_center*)를 가정합니다.
+* OpenCV solvePnP 함수를 통해 *rotation_vector*를 계산하여 머리의 각도를 구합니다. 
+* OpenCV estimateAffine3D 함수를 통해 *transformation*을 계산하고 landmark 2개 좌표(동공의 중심, *pupil*) 를 곱해 동공의 3차원 좌표(*pupil_world_cord*)를 구합니다.
+* 안구의 중앙 벡터(*Eye_ball_center*)와 동공 벡터(*pupil_world_cord*)의 차로 시선 벡터를 구합니다. 
+* 만약 머리의 각도가 크다면(한 쪽 눈의 좌표를 구하기 어렵다면) 다른 한 쪽의 눈을 이용하여 시선 벡터를 계산합니다.  
 * 참고문헌
+  <br/>[GitHub Link](https://github.com/amitt1236/Gaze_estimation?source=post_page-----570d4683fe23--------------------------------)
 
 ### 눈 감음 정도
 * 알고리즘 간단 설명
@@ -135,6 +140,8 @@ WatchOut은 운전자감시체계 기능을 제공하는 라이브러리 DMS를 
 
 ### MediaPipe
 [GitHub Link](https://github.com/google-ai-edge/mediapipe)
+
+MediaPipe는 애플리케이션에 인공 지능(AI) 및 기계 학습(ML) 기술을 신속하게 적용할 수 있는 라이브러리 및 도구 모음을 제공합니다. 해당 프로젝트에서 저희는 여러 기술 중 FaceLandmark와 관련된 도구들을 활용합니다.
 
 ### Dlib
 [GitHub Link](https://github.com/davisking/dlib)
