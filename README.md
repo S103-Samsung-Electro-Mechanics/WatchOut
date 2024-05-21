@@ -132,9 +132,21 @@ WatchOut은 운전자감시체계 기능을 제공하는 라이브러리 DMS를 
   <br/>[GitHub Link](https://github.com/amitt1236/Gaze_estimation?source=post_page-----570d4683fe23--------------------------------)
 
 ### 눈 감음 정도
-* 알고리즘 간단 설명
+* EAR(Eye Aspect Ratio)
+<p align="eye">  
+<img src="./assets/img/eye.PNG" align="center" width="45%">  
+<img src="./assets/img/formulaa.PNG" align="center" width="45%">  <figcaption align="center"></figcaption></p>
+
+* 공식을 통해 EAR 값을 구하고, 이 값이 0.18 이하가 된다면 눈을 감았다 판단합니다.
+![sleep](./assets/img/sleep.PNG)
+
+* Caffier의 연구를 통해 눈 감음 지속 시간에 따른 상태를 알 수 있습니다. 그래프와 같이 400ms 이상 눈 감음이 지속된다면 졸음/수면이라 판단을 하고 운전자에게 알림을 주어 운전에 집중할 수 있도록 하였습니다.
+
+* 시작 후 30초간 EAR의 최댓값, 최솟값을 구하고, 최댓값과 최솟값의 차이와 현재의 EAR 값과 최솟값의 차이를 비교해 눈 감음 비율을 %로 나타냅니다.
+
 * 참고문헌
 
+[EAR](https://medium.com/analytics-vidhya/eye-aspect-ratio-ear-and-drowsiness-detector-using-dlib-a0b2c292d706)
 
 ## 외부 라이브러리
 
