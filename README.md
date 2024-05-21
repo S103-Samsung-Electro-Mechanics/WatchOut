@@ -119,8 +119,12 @@ WatchOut은 운전자감시체계 기능을 제공하는 라이브러리 DMS를 
 ## 알고리즘
 
 ### 운전자 일치 여부 판단
-* 알고리즘 간단 설명
-* 참고문헌
+* Dlib face landmarking model을 사용하여 얼굴을 추출한다.
+* Dlib에서 제공하는 dlib_face_recognition_resnet_model_v1을 사용하여 얼굴 이미지를 128차원의 벡터로 표현한다.
+* 128D 벡터 차원에서는 비슷하게 생긴 사람일수록 거리가 가깝고, 다른 사람이면 거리가 멀어진다.
+* 두 벡터의 유클리드 거리를 계산하여 임계값 이하라면 같은 사람이라고 판별한다.
+* [참고문헌](https://blog.dlib.net/2017/02/high-quality-face-recognition-with-deep.html)
+
 
 ### 시선 각도 추정
 * 알고리즘 간단 설명
