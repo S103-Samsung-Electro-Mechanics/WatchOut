@@ -93,6 +93,7 @@ From scratch
 	| [srcs/face_detection_short_range.tflite](srcs/face_detection_short_range.tflite) | [dependencies/mediapipe/mediapipe/bazel-bin/mediapipe/modules/face_detection/face_detection_short_range.tflite](dependencies/mediapipe/mediapipe/bazel-bin/mediapipe/modules/face_detection/face_detection_short_range.tflite) |
 	| [srcs/face_landmark.tflite](srcs/face_landmark.tflite) | [dependencies/mediapipe/mediapipe/bazel-bin/mediapipe/modules/face_detection/face_landmark.tflite](dependencies/mediapipe/mediapipe/bazel-bin/mediapipe/modules/face_detection/face_landmark.tflite) |
 	| [srcs/iris_landmark.tflite](srcs/iris_landmark.tflite) | [dependencies/mediapipe/mediapipe/bazel-bin/mediapipe/modules/face_detection/iris_landmark.tflite](dependencies/mediapipe/mediapipe/bazel-bin/mediapipe/modules/face_detection/iris_landmark.tflite) |
+	| [srcs/dlib_face_recognition_resnet_model_v1.dat](srcs/dlib_face_recognition_resnet_model_v1.dat) | [build/dlib_face_recognition_resnet_model_v1.dat](build/dlib_face_recognition_resnet_model_v1.dat) |
 
 4. Iris tracking 동적 라이브러리 생성
 	```
