@@ -1,127 +1,171 @@
-/********************************
- * 1. Facial landmark의 좌표를 갖고 시선을 추정하는 알고리즘 (고개와 눈 모두)
- * 사용하는 랜드마크 좌표는 다음과 같음: 양안 안쪽 끝(두 개), 눈 사이, 코 아래 끝,
- * 검은자의 상하좌우 끝부분 네 개의 좌표(네 개씩 두 개)
- * For more details on the algorithm, please refer to: https://arxiv.org/pdf/2401.00406
- *
- * 2. Facial landmark의 좌표를 갖고 눈 감음 정도를 추정하는 알고리즘
- * Paper link: https://www.mdpi.com/2079-9292/11/19/3183
- *
- * 3. MediaPipe face landmark:
- * https://storage.googleapis.com/mediapipe-assets/documentation/mediapipe_face_landmark_fullsize.png
- ********************************/
+#ifndef FACE_PARSER_HPP
+#define FACE_PARSER_HPP
 
-#pragma once
+#include <cstdlib>
+#include <iostream>
 
-// #include Dlib
-// #include OpenCV
-#include <cmath>
-#include <string>
-#include <vector>
+#include <opencv2/opencv.hpp>
 
 #include "common.hpp"
+#include "run_graph_main.h"
+
+#define PI 3.14159265358979323846
 
 namespace dms {
-	class EyeParser {
+	class GazeEstimator {
+		/*
+		Estimate driver's gaze given facial landmarks.
+		*/
 	private:
-		const GazeEstimatorCoefficients gec;
-
-		inline Point2f calcHeadRotation(const EyeGazeLandmarks& egl) const {
-			return {
-			    std::atan((egl.me.z - egl.bn.z) / (egl.me.y - egl.bn.y)),            // ver (around x axis)
-			    std::atan((egl.mca_l.z - egl.mca_r.z) / (egl.mca_l.x - egl.mca_r.x)) // hor (around y axis)
-			};
+		cv::Point2d relative(const cv::Point3d point, const size_t frame_width, const size_t frame_height) {
+			return cv::Point2d(static_cast<int>(point.x * frame_width), static_cast<int>(point.y * frame_height));
 		}
-
-		inline Point2f calcRelativeLength(const EyeGazeLandmarks& egl) const {
-			return {
-			    std::sqrt(
-			        std::pow(egl.me.x - egl.bn.x, 2.0f) +
-			        std::pow(egl.me.y - egl.bn.y, 2.0f) +
-			        std::pow(egl.me.z - egl.bn.z, 2.0f)), // relatvie width of the face to the image frame
-			    std::sqrt(
-			        std::pow(egl.mca_l.x - egl.mca_r.x, 2.0f) +
-			        std::pow(egl.mca_l.y - egl.mca_r.y, 2.0f) +
-			        std::pow(egl.mca_l.z - egl.mca_r.z, 2.0f)) // rel height of the face
-			};
-		}
-
-		inline Point2f calcPupilCenter(
-		    const EyeGazeLandmarks& egl,
-		    const Point2f& face_rel_len) const {
-			Point2f pupil_l{0.0f, 0.0f};
-			Point2f pupil_r{0.0f, 0.0f};
-
-			for (int i = 0; i < 4; ++i) {
-				pupil_l.x -= egl.pupil_l[i].x;
-				pupil_l.y -= egl.pupil_l[i].y;
-				pupil_r.x -= egl.pupil_r[i].x;
-				pupil_r.y -= egl.pupil_r[i].y;
-			}
-
-			pupil_l.x /= 4.0f;
-			pupil_l.y /= 4.0f;
-			pupil_r.x /= 4.0f;
-			pupil_r.y /= 4.0f;
-
-			pupil_l.x += egl.mca_l.x;
-			pupil_l.y += egl.mca_l.y;
-			pupil_r.x += egl.mca_r.x;
-			pupil_r.y += egl.mca_r.y;
-
-			pupil_l.x /= face_rel_len.x;
-			pupil_l.y /= face_rel_len.y;
-			pupil_r.x /= face_rel_len.x;
-			pupil_r.y /= face_rel_len.y;
-
-			return (pupil_l + pupil_r) / 2.0;
-		}
-
-		inline float calcLength(Point3f st, Point3f ed)
-		{
-		return std::sqrt(
-			std::pow(st.x - ed.x, 2.0f) +
-			std::pow(st.y - ed.y, 2.0f));
+		cv::Point3d relativeT(const cv::Point3d point, const size_t frame_width, const size_t frame_height) {
+			return cv::Point3d(static_cast<int>(point.x * frame_width), static_cast<int>(point.y * frame_height), 0);
 		}
 
 	public:
-		EyeParser(const GazeEstimatorCoefficients& gec) : gec(gec) {}
+		/*
+		This method must be called for every single frame. More details
+		about the gaze estimating algorithm is provided in README.md
+		*/
+		GazeAngle estimateGaze(const DMSLandmarks& dmsl, const size_t frame_width, const size_t frame_height)  {
+			// 2D image points
+			std::vector<cv::Point2d> image_points = {
+				relative(dmsl.landmarks[0], frame_width, frame_height),  // Nose tip
+				relative(dmsl.landmarks[1], frame_width, frame_height),  // Chin
+				relative(dmsl.landmarks[7], frame_width, frame_height),  // Left eye left corner
+				relative(dmsl.landmarks[13], frame_width, frame_height), // Right eye right corner
+				relative(dmsl.landmarks[2], frame_width, frame_height),  // Left Mouth corner
+				relative(dmsl.landmarks[3], frame_width, frame_height)   // Right mouth corner
+			};
 
-		Point2f calcGazeDirection(const EyeGazeLandmarks& egl) {
-			Point2f gaze_dir{0.0f, 0.0f};
-			Point2f rotation = calcHeadRotation(egl);
-			Point2f face_rel_len = calcRelativeLength(egl);
-			Point2f pupil = calcPupilCenter(egl, face_rel_len);
-			Point2f face_center{egl.me.x, egl.me.y};
+			// general face 3D model points
+			std::vector<cv::Point3d> model_points = {
+				cv::Point3d(0.0, 0.0, 0.0),       // Nose tip
+				cv::Point3d(0, -63.6, -12.5),     // Chin
+				cv::Point3d(-43.3, 32.7, -26),    // Left eye, left corner
+				cv::Point3d(43.3, 32.7, -26),     // Right eye, right corner
+				cv::Point3d(-28.9, -28.9, -24.1), // Left Mouth corner
+				cv::Point3d(28.9, -28.9, -24.1)   // Right mouth corner
+			};
 
-			gaze_dir.x = gec.coeffs[0].x;
-			gaze_dir.y = gec.coeffs[0].y;
+			cv::Point3d Eye_ball_center_right = cv::Point3d(29.05, 32.7, -39.5);
+			cv::Point3d Eye_ball_center_left = cv::Point3d(-29.05, 32.7, -39.5);
 
-			gaze_dir.x += gec.coeffs[1].x * rotation.hor;
-			gaze_dir.y += gec.coeffs[1].y * rotation.ver;
+			// Camera matrix estimation
+			double focal_length = frame_width;
+			cv::Point2d center(frame_width / 2, frame_height / 2);
+			cv::Mat camera_matrix = (cv::Mat_<double>(3, 3) << focal_length, 0, center.x,
+									0, focal_length, center.y,
+									0, 0, 1);
 
-			gaze_dir.x += gec.coeffs[2].x * pupil.x;
-			gaze_dir.y += gec.coeffs[2].y * pupil.y;
+			cv::Mat dist_coeffs = cv::Mat::zeros(4, 1, cv::DataType<double>::type); // Assuming no lens distortion
 
-			gaze_dir.x += gec.coeffs[3].x * face_rel_len.x;
-			gaze_dir.y += gec.coeffs[3].y * face_rel_len.y;
+			// Solve PnP problem
+			cv::Mat rotation_vector, translation_vector;
+			cv::solvePnP(model_points, image_points, camera_matrix, dist_coeffs, rotation_vector, translation_vector);
 
-			gaze_dir.x += gec.coeffs[4].x * face_center.x;
-			gaze_dir.y += gec.coeffs[4].y * face_center.y;
+			// Calculate Head rotation vector
+			cv::Mat rotation_matrix;
+			cv::Rodrigues(rotation_vector, rotation_matrix);
 
-			return gaze_dir;
+			double sy = sqrt(rotation_matrix.at<double>(0, 0) * rotation_matrix.at<double>(0, 0) +
+							rotation_matrix.at<double>(1, 0) * rotation_matrix.at<double>(1, 0));
+
+			double x = 0, y = 0, z = 0;
+			if (sy < 1e-6) {
+				x = atan2(rotation_matrix.at<double>(2, 1), rotation_matrix.at<double>(2, 2));
+				y = atan2(-rotation_matrix.at<double>(2, 0), sy);
+				z = atan2(rotation_matrix.at<double>(1, 0), rotation_matrix.at<double>(0, 0));
+			}
+			else {
+				x = atan2(-rotation_matrix.at<double>(1, 2), rotation_matrix.at<double>(1, 1));
+				y = atan2(-rotation_matrix.at<double>(2, 0), sy);
+				z = 0;
+			}
+
+			double head_pitch = x * 180 / PI;
+			double head_yaw = y * 180 / PI;
+			double head_roll = z * 180 / PI;
+
+			// Pupil locations
+			cv::Point2d left_pupil = relative(dmsl.landmarks[17], frame_width, frame_height);
+			cv::Point2d right_pupil = relative(dmsl.landmarks[16], frame_width, frame_height);
+
+			// Transformation between image point to world point
+			cv::Mat transformation;
+
+			std::vector<cv::Point3d> image_points1 = {
+				relativeT(dmsl.landmarks[0], frame_width, frame_height),  // Nose tip
+				relativeT(dmsl.landmarks[1], frame_width, frame_height),  // Chin
+				relativeT(dmsl.landmarks[7], frame_width, frame_height),  // Left eye left corner
+				relativeT(dmsl.landmarks[13], frame_width, frame_height), // Right eye right corner
+				relativeT(dmsl.landmarks[2], frame_width, frame_height),  // Left Mouth corner
+				relativeT(dmsl.landmarks[3], frame_width, frame_height)   // Right mouth corner
+			};
+
+			cv::estimateAffine3D(image_points1, model_points, transformation, cv::noArray());
+
+			cv::Mat pupil_world_cord;
+			cv::Mat S;
+
+			if (!transformation.empty()) {
+				// Project pupil image point into 3D world point
+				cv::Mat pupil_world_cord_left = transformation * (cv::Mat_<double>(4, 1) << left_pupil.x, left_pupil.y, 0, 1);
+				cv::Mat pupil_world_cord_right = transformation * (cv::Mat_<double>(4, 1) << right_pupil.x, right_pupil.y, 0, 1);
+
+				// 3D gaze point
+				cv::Mat S_left = (cv::Mat(Eye_ball_center_left) + (pupil_world_cord_left - cv::Mat(Eye_ball_center_left)) * 10);
+				cv::Mat S_right = (cv::Mat(Eye_ball_center_right) + (pupil_world_cord_right - cv::Mat(Eye_ball_center_right)) * 10);
+
+				pupil_world_cord = (pupil_world_cord_left + pupil_world_cord_right) * 0.5;
+				S = (S_left + S_right) * 0.5;
+			}
+			else {
+				if (head_yaw > 0) {
+					std::vector<cv::Point3d> image_points_left = {image_points1[0], image_points1[1], image_points1[2], image_points1[4]};
+					std::vector<cv::Point3d> model_points_left = {model_points[0], model_points[1], model_points[2], model_points[4]};
+					cv::estimateAffine3D(image_points_left, model_points_left, transformation, cv::noArray());
+					pupil_world_cord = transformation * (cv::Mat_<double>(4, 1) << left_pupil.x, left_pupil.y, 0, 1);
+					S = (cv::Mat(Eye_ball_center_left) + (pupil_world_cord - cv::Mat(Eye_ball_center_left)) * 10);
+				}
+				else {
+					std::vector<cv::Point3d> image_points_right = {image_points1[0], image_points1[1], image_points1[3], image_points1[5]};
+					std::vector<cv::Point3d> model_points_right = {model_points[0], model_points[1], model_points[3], model_points[5]};
+					cv::estimateAffine3D(image_points_right, model_points_right, transformation, cv::noArray());
+					pupil_world_cord = transformation * (cv::Mat_<double>(4, 1) << right_pupil.x, right_pupil.y, 0, 1);
+					S = (cv::Mat(Eye_ball_center_right) + (pupil_world_cord - cv::Mat(Eye_ball_center_right)) * 10);
+				}
+			}
+			cv::Mat gaze_vector = S - pupil_world_cord;
+			double gaze_yaw = atan2(gaze_vector.at<double>(0, 0), gaze_vector.at<double>(2, 0)) * 180 / PI;
+			double gaze_pitch = atan2(gaze_vector.at<double>(1, 0), gaze_vector.at<double>(2, 0)) * 180 / PI;
+
+			return {gaze_yaw, gaze_pitch};
 		}
+	};
 
-		EyeAspectRatio calcEAR(const EyeClosednessLandmarks& ecl) {
-			float eyelength1_l = calcLength(ecl.lid_l[1], ecl.lid_l[5]);  //1 5
-			float eyelength2_l = calcLength(ecl.lid_l[2], ecl.lid_l[4]);  //2 4
-			float eyewidth_l = calcLength(ecl.lid_l[0], ecl.lid_l[3]);  //가로 0 3
+	class EyeClosednessCalculator {
+		/*
+		Calculates EAR
+		*/
+	public:
+		/*
+		More information about the EAR algorithm can be found in the README.
+		*/
+		EyeAspectRatio calculateEyeClosedness(const DMSLandmarks& dmsl) {
+			double eyelength1_l = cv::norm(dmsl.landmarks[5] - dmsl.landmarks[9]); // 1 5
+			double eyelength2_l = cv::norm(dmsl.landmarks[6] - dmsl.landmarks[8]); // 2 4
+			double eyewidth_l = cv::norm(dmsl.landmarks[4] - dmsl.landmarks[7]);   // 가로 0 3
 
-			float eyelength1_r = calcLength(ecl.lid_r[1], ecl.lid_r[5]);
-			float eyelength2_r = calcLength(ecl.lid_r[2], ecl.lid_r[4]);
-			float eyewidth_r = calcLength(ecl.lid_r[0], ecl.lid_r[3]);
+			double eyelength1_r = cv::norm(dmsl.landmarks[11] - dmsl.landmarks[15]); // 1 5
+			double eyelength2_r = cv::norm(dmsl.landmarks[12] - dmsl.landmarks[14]); // 2 4
+			double eyewidth_r = cv::norm(dmsl.landmarks[10] - dmsl.landmarks[13]);   // 가로 0 3
 
-			return {(eyelength1_l+eyelength2_l+eyelength1_r+eyelength2_r) / (eyewidth_l + eyewidth_r)};
+			return {(eyelength1_l + eyelength2_l + eyelength1_r + eyelength2_r) / (eyewidth_l + eyewidth_r)};
 		}
 	};
 }
+
+#endif
