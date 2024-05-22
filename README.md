@@ -87,7 +87,7 @@ From scratch
 	|-|-|
 	| [srcs/BUILD](srcs/BUILD) | [dependencies/mediapipe/mediapipe/examples/desktop/BUILD](dependencies/mediapipe/mediapipe/examples/desktop/BUILD) |
 	| [srcs/iris_tracking_gpu.pbtxt](srcs/iris_tracking_gpu.pbtxt) | [dependencies/mediapipe/mediapipe/graphs/iris_tracking/iris_tracking_gpu.pbtxt](dependencies/mediapipe/mediapipe/graphs/iris_tracking/iris_tracking_gpu.pbtxt) |
-	| [srcs/demo_run_graph_main_gpu.cc](srcs/demo_run_graph_main_gpu.cc) | [dependencies/mediapipe/mediapipe/examples/desktop/demo_run_main_gpu.cc](dependencies/mediapipe/mediapipe/examples/desktop/demo_run_main_gpu.cc) |
+	| [srcs/demo_run_graph_main_gpu.cc](srcs/demo_run_graph_main_gpu.cc) | [dependencies/mediapipe/mediapipe/examples/desktop/demo_run_graph_main_gpu.cc](dependencies/mediapipe/mediapipe/examples/desktop/demo_run_graph_main_gpu.cc) |
 	| [srcs/run_graph_main.h](srcs/run_graph_main.h)| [dependencies/mediapipe/mediapipe/examples/desktop/run_graph_main.h](dependencies/mediapipe/mediapipe/examples/desktop/run_graph_main.h) |
 	| [srcs/run_graph_main.cc](srcs/run_graph_main.cc)| [dependencies/mediapipe/mediapipe/examples/desktop/run_graph_main.cc](dependencies/mediapipe/mediapipe/examples/desktop/run_graph_main.cc) |
 	| [srcs/face_detection_short_range.tflite](srcs/face_detection_short_range.tflite) | [dependencies/mediapipe/mediapipe/bazel-bin/mediapipe/modules/face_detection/face_detection_short_range.tflite](dependencies/mediapipe/mediapipe/bazel-bin/mediapipe/modules/face_detection/face_detection_short_range.tflite) |
