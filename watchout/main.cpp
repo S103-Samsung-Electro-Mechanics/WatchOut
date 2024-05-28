@@ -107,9 +107,24 @@ int monitorDriver(int argc, char* argv[]) {
 			result = dms_result();
 		}
 
-		std::string caption(std::to_string(rate.get()) + " FPS | " + std::to_string(result.gaze_angle.yaw) + " | " + std::to_string(result.gaze_angle.pitch) + " | " + std::to_string(result.eye_aspect_ratio.ear));
-		cv::putText(output_frame, caption, {10, 40}, 2, 1, {0, 0, 255});
-		std::cout << caption << std::endl;
+
+		if (landmark_exists) {
+			std::string caption_fps = std::to_string(rate.get()) + " FPS";
+			std::string caption_yaw = "YAW: " + std::to_string(result.gaze_angle.yaw);
+			std::string caption_pitch = "PITCH: " + std::to_string(result.gaze_angle.pitch);
+			std::string caption_ear = "EAR: " + std::to_string(result.eye_aspect_ratio.ear);
+			std::string caption = caption_fps + "\n" + caption_yaw + "\n" + caption_pitch + "\n" + caption_ear;
+			cv::putText(output_frame, caption_fps, {10, 20}, cv::FONT_HERSHEY_PLAIN, 1, {0, 0, 255});
+			cv::putText(output_frame, caption_yaw, {10, 35}, cv::FONT_HERSHEY_PLAIN, 1, {0, 0, 255});
+			cv::putText(output_frame, caption_pitch, {10, 50}, cv::FONT_HERSHEY_PLAIN, 1, {0, 0, 255});
+			cv::putText(output_frame, caption_ear, {10, 65}, cv::FONT_HERSHEY_PLAIN, 1, {0, 0, 255});
+			std::cout << caption << std::endl;
+		}
+		else {
+			std::string caption = "Face not detected.";
+			cv::putText(output_frame, caption, {10, 20}, cv::FONT_HERSHEY_PLAIN, 1, {0, 0, 255});
+			std::cout << caption << std::endl;
+		}
 		cv::imshow("Result", output_frame);
 	}
 
