@@ -19,7 +19,7 @@ WatchOut에는 [Dlib](http://dlib.net/)과 [MediaPipe](https://ai.google.dev/edg
 외부 라이브러리가 생성돼 있는 현재 레포지토리에서 빌드
 
 ```
-git clone <this-repository-link>
+git clone https://github.com/S103-Samsung-Electro-Mechanics/WatchOut.git
 cd watchout
 mkdir build
 cd build
@@ -35,7 +35,7 @@ MediaPipe에서 라이브러리 파일을 직접 생성 후 WatchOut 빌드
 
 1. Bazel로 iris_tracking_gpu 샘플 코드 빌드
 	```
-	git clone <this-repository-link>
+	git clone https://github.com/S103-Samsung-Electro-Mechanics/WatchOut.git
 	cd watchout/dependencies/mediapipe
 	bazel build -c opt --copt -DMESA_EGL_NO_X11_HEADERS --copt -DEGL_NO_X11 mediapipe/examples/desktop/iris_tracking:iris_tracking_gpu
 	```
@@ -64,7 +64,7 @@ From scratch
 
 0. MediaPipe를 원본 버전으로 복원
 	```
-	git clone <this-repository-link>
+	git clone https://github.com/S103-Samsung-Electro-Mechanics/WatchOut.git
 	cd watchout/dependencies/
 	rm -rf mediapipe
 	git clone https://github.com/google-ai-edge/mediapipe
